@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+            color: #333;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease-in-out;
+        }
+        .container:hover {
+            transform: scale(1.05);
+        }
+        h2 {
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+            font-size: 16px;
+        }
+        button {
+            background: #ff758c;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        button:hover {
+            background: #e63950;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        li {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+            flex-wrap: wrap;
+        }
+        li:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+        .delete-btn, .edit-btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-left: 5px;
+            font-size: 14px;
+        }
+        .edit-btn {
+            background: #4caf50;
+        }
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+        .edit-btn:hover {
+            background: #388e3c;
+        }
+        .checkbox {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .completed {
+            text-decoration: line-through;
+            color: #666;
+        }
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+                max-width: 100%;
+            }
+            h2 {
+                font-size: 20px;
+            }
+            input {
+                font-size: 14px;
+                padding: 10px;
+            }
+            button {
+                font-size: 14px;
+                padding: 10px;
+            }
+            li {
+                font-size: 14px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .edit-btn, .delete-btn {
+                font-size: 12px;
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>To-Do List</h2>
+        <div class="input-container">
+            <input type="text" id="taskInput" placeholder="Enter a task">
+            <button onclick="addTask()">+</button>
+        </div>
+        <ul id="taskList"></ul>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", loadTasks);
+        
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskList = document.getElementById('taskList');
+            const taskText = taskInput.value.trim();
+            
+            if (taskText === '') return;
+            
+            const li = createTaskElement(taskText);
+            taskList.appendChild(li);
+            taskInput.value = '';
+            saveTasks();
+        }
+        
+        function removeTask(button) {
+            button.parentElement.remove();
+            saveTasks();
+        }
+        
+        function toggleTask(checkbox) {
+            const taskText = checkbox.nextElementSibling;
+            taskText.classList.toggle('completed', checkbox.checked);
+            saveTasks();
+        }
+        
+        function editTask(button) {
+            const taskText = button.previousElementSibling;
+            const newText = prompt("Edit your task:", taskText.textContent);
+            if (newText !== null && newText.trim() !== "") {
+                taskText.textContent = newText;
+                saveTasks();
+            }
+        }
+        
+        function saveTasks() {
+            const tasks = [];
+            document.querySelectorAll("#taskList li").forEach(li => {
+                tasks.push({
+                    text: li.children[1].textContent,
+                    completed: li.children[0].checked
+                });
+            });
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+        
+        function loadTasks() {
+            const taskList = document.getElementById("taskList");
+            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks.forEach(task => {
+                const li = createTaskElement(task.text, task.completed);
+                taskList.appendChild(li);
+            });
+        }
+        
+        function createTaskElement(text, completed = false) {
+            const li = document.createElement('li');
+            li.innerHTML = `<input type="checkbox" class="checkbox" onclick="toggleTask(this)" ${completed ? 'checked' : ''}> 
+                            <span class="${completed ? 'completed' : ''}">${text}</span> 
+                            <button class="edit-btn" onclick="editTask(this)">Edit</button>
+                            <button class="delete-btn" onclick="removeTask(this)">X</button>`;
+            return li;
+        }
+    </script>
+</body>
+</html>
